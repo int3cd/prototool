@@ -1,40 +1,41 @@
-FROM golang:1.14-alpine3.11 as builder
+FROM golang:1.17.6-alpine3.15 as builder
 
-RUN apk add --update --no-cache build-base curl git upx && \
+RUN apk add --update --no-cache build-base curl git && \
   rm -rf /var/cache/apk/*
 
-ENV GOLANG_PROTOBUF_VERSION=1.3.1 \
-  GOGO_PROTOBUF_VERSION=1.2.1
-RUN GO111MODULE=on go get \
-  github.com/golang/protobuf/protoc-gen-go@v${GOLANG_PROTOBUF_VERSION} \
-  github.com/gogo/protobuf/protoc-gen-gofast@v${GOGO_PROTOBUF_VERSION} \
-  github.com/gogo/protobuf/protoc-gen-gogo@v${GOGO_PROTOBUF_VERSION} \
-  github.com/gogo/protobuf/protoc-gen-gogofast@v${GOGO_PROTOBUF_VERSION} \
-  github.com/gogo/protobuf/protoc-gen-gogofaster@v${GOGO_PROTOBUF_VERSION} \
-  github.com/gogo/protobuf/protoc-gen-gogoslick@v${GOGO_PROTOBUF_VERSION} && \
+ENV \
+  GOLANG_PROTOBUF_VERSION=1.27.1 \
+  GOLANG_PROTOBUF_GRPC_VERSION=1.2.0 \
+  GOGO_PROTOBUF_VERSION=1.3.2
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v${GOLANG_PROTOBUF_VERSION} && \
+  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v${GOLANG_PROTOBUF_GRPC_VERSION} && \
+  go install github.com/gogo/protobuf/protoc-gen-gofast@v${GOGO_PROTOBUF_VERSION} && \
+  go install github.com/gogo/protobuf/protoc-gen-gogo@v${GOGO_PROTOBUF_VERSION} && \
+  go install github.com/gogo/protobuf/protoc-gen-gogofast@v${GOGO_PROTOBUF_VERSION} && \
+  go install github.com/gogo/protobuf/protoc-gen-gogofaster@v${GOGO_PROTOBUF_VERSION} && \
+  go install github.com/gogo/protobuf/protoc-gen-gogoslick@v${GOGO_PROTOBUF_VERSION} && \
   mv /go/bin/protoc-gen-go* /usr/local/bin/
 
-ENV GRPC_GATEWAY_VERSION=1.8.5
+ENV GRPC_GATEWAY_VERSION=2.10.0
 RUN curl -sSL \
   https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v${GRPC_GATEWAY_VERSION}/protoc-gen-grpc-gateway-v${GRPC_GATEWAY_VERSION}-linux-x86_64 \
   -o /usr/local/bin/protoc-gen-grpc-gateway && \
   curl -sSL \
-  https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v${GRPC_GATEWAY_VERSION}/protoc-gen-swagger-v${GRPC_GATEWAY_VERSION}-linux-x86_64 \
-  -o /usr/local/bin/protoc-gen-swagger && \
+  https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v${GRPC_GATEWAY_VERSION}/protoc-gen-openapiv2-v${GRPC_GATEWAY_VERSION}-linux-x86_64 \
+  -o /usr/local/bin/protoc-gen-openapiv2 && \
   chmod +x /usr/local/bin/protoc-gen-grpc-gateway && \
-  chmod +x /usr/local/bin/protoc-gen-swagger
+  chmod +x /usr/local/bin/protoc-gen-openapiv2
 
-ENV GRPC_WEB_VERSION=1.0.4
+ENV GRPC_WEB_VERSION=1.3.1
 RUN curl -sSL \
   https://github.com/grpc/grpc-web/releases/download/${GRPC_WEB_VERSION}/protoc-gen-grpc-web-${GRPC_WEB_VERSION}-linux-x86_64 \
   -o /usr/local/bin/protoc-gen-grpc-web && \
   chmod +x /usr/local/bin/protoc-gen-grpc-web
 
-ENV YARPC_VERSION=1.37.3
+ENV YARPC_VERSION=1.60.0
 RUN git clone --depth 1 -b v${YARPC_VERSION} https://github.com/yarpc/yarpc-go.git /go/src/go.uber.org/yarpc && \
     cd /go/src/go.uber.org/yarpc && \
-    GO111MODULE=on go mod init && \
-    GO111MODULE=on go install ./encoding/protobuf/protoc-gen-yarpc-go && \
+    go install ./encoding/protobuf/protoc-gen-yarpc-go && \
     mv /go/bin/protoc-gen-yarpc-go /usr/local/bin/
 
 ENV TWIRP_VERSION=5.7.0
@@ -47,7 +48,7 @@ RUN curl -sSL \
   chmod +x /usr/local/bin/protoc-gen-twirp && \
   chmod +x /usr/local/bin/protoc-gen-twirp_python
 
-ENV PROTOBUF_VERSION=3.6.1
+ENV PROTOBUF_VERSION=3.19.4
 RUN mkdir -p /tmp/protoc && \
   curl -sSL \
   https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip \
@@ -55,6 +56,17 @@ RUN mkdir -p /tmp/protoc && \
   cd /tmp/protoc && \
   unzip protoc.zip && \
   mv /tmp/protoc/include /usr/local/include
+
+ENV GEN_VALIDATE_VERSION=0.6.7
+RUN git clone --depth 1 -b v${GEN_VALIDATE_VERSION} https://github.com/envoyproxy/protoc-gen-validate.git /tmp/protoc-gen-validate && \
+  cd /tmp/protoc-gen-validate && \
+  go build && \
+  mv /tmp/protoc-gen-validate/protoc-gen-validate /usr/local/bin/protoc-gen-validate && \
+  mv /tmp/protoc-gen-validate/validate /usr/local/include && \
+  chmod +x /usr/local/bin/protoc-gen-validate
+
+COPY plugins/bin/grpc_node_plugin /usr/local/bin/grpc_node_plugin
+RUN chmod +x /usr/local/bin/protoc-gen-validate
 
 RUN mkdir -p /tmp/prototool
 COPY go.mod go.sum /tmp/prototool/
@@ -65,30 +77,26 @@ RUN cd /tmp/prototool && \
   go install ./cmd/prototool && \
   mv /go/bin/prototool /usr/local/bin/prototool
 
-RUN upx --lzma /usr/local/bin/*
-
-FROM alpine:latest
+FROM alpine:3.15
 
 WORKDIR /work
 
 ENV \
   PROTOTOOL_PROTOC_BIN_PATH=/usr/bin/protoc \
   PROTOTOOL_PROTOC_WKT_PATH=/usr/include \
-  GRPC_VERSION=1.25.0 \
-  PROTOBUF_VERSION=3.11.2 \
-  ALPINE_GRPC_VERSION_SUFFIX=r1 \
+  GRPC_VERSION=1.42.0 \
+  PROTOBUF_VERSION=3.18.1 \
+  ALPINE_GRPC_VERSION_SUFFIX=r0 \
   ALPINE_PROTOBUF_VERSION_SUFFIX=r1
-
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
   apk add --update --no-cache bash curl git grpc=${GRPC_VERSION}-${ALPINE_GRPC_VERSION_SUFFIX} protobuf=${PROTOBUF_VERSION}-${ALPINE_PROTOBUF_VERSION_SUFFIX} && \
   rm -rf /var/cache/apk/*
 
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /usr/local/include /usr/include
+RUN chmod 755 -R /usr/include
 
-ENV GOGO_PROTOBUF_VERSION=1.2.1 \
-  GOLANG_PROTOBUF_VERSION=1.3.1 \
-  GRPC_GATEWAY_VERSION=1.8.5 \
-  GRPC_WEB_VERSION=1.0.4 \
-  TWIRP_VERSION=5.7.0 \
-  YARPC_VERSION=1.37.3
+RUN apk add --no-cache nodejs npm nghttp2-dev && \
+  rm -rf /var/cache/apk/* && \
+  npm i --global --production ts-protoc-gen && \
+  apk del npm

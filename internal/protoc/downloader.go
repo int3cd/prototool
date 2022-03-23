@@ -97,7 +97,7 @@ func newDownloader(config settings.Config, options ...DownloaderOption) (*downlo
 		}
 		protobufPath := filepath.Join(cleanWKTPath, "google", "protobuf")
 		info, err := os.Stat(protobufPath)
-		if os.IsNotExist(err) {
+		if err != nil {
 			return nil, err
 		}
 		if !info.IsDir() {
@@ -449,7 +449,7 @@ func getUnameSUnameMPaths(goos string, goarch string) (string, string, error) {
 	}
 	var unameM string
 	switch goarch {
-	case "amd64":
+	case "amd64", "arm64":
 		unameM = "x86_64"
 	default:
 		return "", "", fmt.Errorf("unsupported value for runtime.GOARCH: %v", goarch)

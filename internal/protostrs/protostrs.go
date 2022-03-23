@@ -26,6 +26,7 @@
 package protostrs
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -79,8 +80,9 @@ func GoPackageV2(packageName string) string {
 	if _, _, ok := MajorBetaVersion(packageName); !ok {
 		return GoPackage(packageName)
 	}
-	split := strings.Split(packageName, ".")
-	return split[len(split)-2] + split[len(split)-1]
+	el := strings.Split(packageName, ".")
+	pkgName := el[len(el)-2] + el[len(el)-1]
+	return fmt.Sprintf("%s;%s", strings.Join(el, "/"), pkgName)
 }
 
 // JavaOuterClassname returns the value for the file option
