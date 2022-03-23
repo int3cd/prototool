@@ -42,20 +42,20 @@ var (
 		"google/protobuf/wrappers.proto":        {},
 	}
 
-	// FilenameToGoModifierMap is a map from filename to package for github.com/golang/protobuf.
+	// FilenameToGoModifierMap is a map from filename to package for google.golang.org/protobuf.
 	FilenameToGoModifierMap = map[string]string{
-		"google/protobuf/any.proto":             "github.com/golang/protobuf/ptypes/any",
-		"google/protobuf/api.proto":             "google.golang.org/genproto/protobuf/api",
-		"google/protobuf/compiler/plugin.proto": "github.com/golang/protobuf/protoc-gen-go/plugin",
-		"google/protobuf/descriptor.proto":      "github.com/golang/protobuf/protoc-gen-go/descriptor",
-		"google/protobuf/duration.proto":        "github.com/golang/protobuf/ptypes/duration",
-		"google/protobuf/empty.proto":           "github.com/golang/protobuf/ptypes/empty",
-		"google/protobuf/field_mask.proto":      "google.golang.org/genproto/protobuf/field_mask",
-		"google/protobuf/source_context.proto":  "google.golang.org/genproto/protobuf/source_context",
-		"google/protobuf/struct.proto":          "github.com/golang/protobuf/ptypes/struct",
-		"google/protobuf/timestamp.proto":       "github.com/golang/protobuf/ptypes/timestamp",
-		"google/protobuf/type.proto":            "google.golang.org/genproto/protobuf/ptype",
-		"google/protobuf/wrappers.proto":        "github.com/golang/protobuf/ptypes/wrappers",
+		"google/protobuf/any.proto":             "google.golang.org/protobuf/types/known/anypb",
+		"google/protobuf/api.proto":             "google.golang.org/protobuf/types/known/apipb",
+		"google/protobuf/compiler/plugin.proto": "google.golang.org/protobuf/types/pluginpb",
+		"google/protobuf/descriptor.proto":      "google.golang.org/protobuf/types/descriptorpb",
+		"google/protobuf/duration.proto":        "google.golang.org/protobuf/types/known/durationpb",
+		"google/protobuf/empty.proto":           "google.golang.org/protobuf/types/known/emptypb",
+		"google/protobuf/field_mask.proto":      "google.golang.org/protobuf/types/known/field_maskpb",
+		"google/protobuf/source_context.proto":  "google.golang.org/protobuf/types/known/source_contextpb",
+		"google/protobuf/struct.proto":          "google.golang.org/protobuf/types/known/structpb",
+		"google/protobuf/timestamp.proto":       "google.golang.org/protobuf/types/known/timestamppb",
+		"google/protobuf/type.proto":            "google.golang.org/protobuf/types/known/ptypepb",
+		"google/protobuf/wrappers.proto":        "google.golang.org/protobuf/types/known/wrapperspb",
 	}
 
 	// FilenameToGogoModifierMap is a map from filename to package for github.com/gogo/protobuf.
