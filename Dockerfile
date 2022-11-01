@@ -57,7 +57,7 @@ RUN mkdir -p /tmp/protoc && \
   unzip protoc.zip && \
   mv /tmp/protoc/include /usr/local/include
 
-ENV GEN_VALIDATE_VERSION=0.6.7
+ENV GEN_VALIDATE_VERSION=0.6.13
 RUN git clone --depth 1 -b v${GEN_VALIDATE_VERSION} https://github.com/envoyproxy/protoc-gen-validate.git /tmp/protoc-gen-validate && \
   cd /tmp/protoc-gen-validate && \
   go build && \

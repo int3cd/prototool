@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - No changes yet.
 
+## [1.11.1] - 2022-11-01
+- Updated protoc-gen-validate plugin
 
 ## [1.11.0] - 2022-03-24
 - Updated Golang version to 1.17.

@@ -8,7 +8,7 @@
 |---------------------------------------------------------------------------------|---------|
 | [protoc-gen-go](google.golang.org/protobuf/cmd/protoc-gen-go)                   | 1.27.1  |
 | [protoc-gen-go-grpc](google.golang.org/grpc/cmd/protoc-gen-go-grpc)             | 1.2.0   |
-| [protoc-gen-validate](https://github.com/envoyproxy/protoc-gen-validate)        | 0.6.2   |
+| [protoc-gen-validate](https://github.com/envoyproxy/protoc-gen-validate)        | 0.6.13  |
 | [grpc-tools](https://github.com/grpc/grpc-node/tree/master/packages/grpc-tools) | 1.11.2  |
 | [ts-protoc-gen](https://github.com/improbable-eng/ts-protoc-gen)                | 0.15.0  |
 
